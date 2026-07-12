@@ -1,4 +1,4 @@
-import { execSync, exec } from "child_process"
+import { execFileSync, execFile } from "child_process"
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmdirSync, unlinkSync, appendFileSync } from "fs"
 import { homedir } from "os"
 import { join } from "path"
@@ -32,7 +32,7 @@ let wakeupDone = false
 function runPython(code: string): string {
   writeFileSync(TMP_SCRIPT, code)
   try {
-    return execSync(`${VENV_PYTHON} ${TMP_SCRIPT}`, { encoding: "utf-8", timeout: 30000 }).trim()
+    return execFileSync(VENV_PYTHON, [TMP_SCRIPT], { encoding: "utf-8", timeout: 30000 }).trim()
   } finally {
     unlinkSync(TMP_SCRIPT)
   }
@@ -61,7 +61,7 @@ function readIdentity(): string {
 
 function mempalaceSearch(query: string): string {
   try {
-    const out = execSync(`${MEMPALACE_BIN} search "${query.replace(/"/g, '\\"')}" --results ${MAX_SEARCH_RESULTS}`, {
+    const out = execFileSync(MEMPALACE_BIN, ["search", query, "--results", String(MAX_SEARCH_RESULTS)], {
       encoding: "utf-8",
       timeout: 15000,
     }).trim()
@@ -172,7 +172,7 @@ print(json.dumps(texts))
   miningLock = true
   log(`mining ${exported.length} sessions`)
 
-  exec(`${MEMPALACE_BIN} mine ${OUT_DIR} --mode convos`, {
+  execFile(MEMPALACE_BIN, ["mine", OUT_DIR, "--mode", "convos"], {
     encoding: "utf-8",
     timeout: 120000,
   }, (err) => {
