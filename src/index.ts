@@ -172,9 +172,13 @@ print(json.dumps(texts))
   miningLock = true
   log(`mining ${exported.length} sessions`)
 
+  // No timeout here: `mempalace mine` on a large palace legitimately takes
+  // far longer than 2 minutes. A hard exec timeout only killed the wrapper
+  // shell, orphaning the python mine (which kept running and holding the
+  // palace lock) while `miningLock` was released early — allowing duplicate
+  // concurrent mines that contended for the lock and interrupted repair.
   exec(`${MEMPALACE_BIN} mine ${OUT_DIR} --mode convos`, {
     encoding: "utf-8",
-    timeout: 120000,
   }, (err) => {
     miningLock = false
     if (err) { log(`mine err: ${err.message}`); return }
